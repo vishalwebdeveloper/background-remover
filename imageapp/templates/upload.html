@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Background Remover & Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            margin: 0;
+            padding: 40px 15px;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 40px;
+            color: #00f7ff;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 500;
+            color: #e0f7fa;
+        }
+
+        select,
+        input[type="file"],
+        input[type="color"],
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 2px solid #00f7ff;
+            transition: background-color 0.3s ease;
+        }
+
+        select:focus,
+        input[type="file"]:focus,
+        input[type="color"]:focus {
+            outline: none;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-color: #1de9b6;
+        }
+
+        input::file-selector-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 16px;
+            color: #00f7ff;
+            font-weight: 500;
+            border-radius: 8px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            height: 50px;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        button {
+            background-color: #00f7ff;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1de9b6;
+            color: #000;
+        }
+
+        .image-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: space-between;
+        }
+
+        .image-box {
+            flex: 1 1 45%;
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-box h3 {
+            color: #00f7ff;
+            margin-bottom: 10px;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .image-box {
+                flex: 1 1 100%;
+            }
+        }
+
+        #editorForm {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.06);
+            margin-bottom: 30px;
+        }
+
+        option {
+            color: #000;
+            background-color: #f0f0f0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #00f7ff;
+            color: #000;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #1de9b6;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>⚡ Smart Background Remover & Editor</h2>
+
+        {% if not uploaded %}
+        <!-- Upload Section -->
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="action" value="upload">
+            <button type="submit">Upload Image & Remove Background</button>
+        </form>
+        {% endif %}
+
+        {% if uploaded %}
+        <!-- Background Editor -->
+        <form method="post" enctype="multipart/form-data" id="editorForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="image_id" value="{{ uploaded.id }}">
+
+            <label for="bgType">Choose Background Type:</label>
+            <select name="bg_type" id="bgType" required>
+                <option value="">-- Select --</option>
+                <option value="color">Color</option>
+                <option value="image">Image</option>
+            </select>
+
+            <div id="colorInput" style="display:none;">
+                <label>Select Color:</label>
+                <input type="color" name="bg_color" id="bgColor">
+            </div>
+
+            <div id="imageInput" style="display:none;">
+                <label>Choose Background Image:</label>
+                <input type="file" name="bg_image" id="bgImage">
+            </div>
+        </form>
+        {% endif %}
+
+        {% if uploaded or edited %}
+        <!-- Preview Area -->
+        <div class="image-row">
+            {% if uploaded %}
+            <div class="image-box">
+                <h3>Original Without Background</h3>
+                <img src="{{ uploaded.removed_bg_image.url }}" alt="Removed BG">
+                <a href="{{ uploaded.removed_bg_image.url }}" download class="download-btn">⬇️ Download Removed BG</a>
+            </div>
+            {% endif %}
+
+            {% if edited %}
+            <div class="image-box">
+                <h3>Edited Background</h3>
+                <img src="{{ edited.edited_image.url }}" alt="Edited BG">
+                <a href="{{ edited.edited_image.url }}" download class="download-btn">⬇️ Download Edited Image</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const bgType = document.getElementById('bgType');
+        const colorInput = document.getElementById('colorInput');
+        const imageInput = document.getElementById('imageInput');
+        const bgColor = document.getElementById('bgColor');
+        const bgImage = document.getElementById('bgImage');
+        const form = document.getElementById('editorForm');
+
+        function autoSubmit() {
+            if (bgType.value === "color" || bgType.value === "image") {
+                setTimeout(() => form.submit(), 400);
+            }
+        }
+
+        if (bgType) {
+            bgType.addEventListener('change', function () {
+                const type = this.value;
+                colorInput.style.display = type === 'color' ? 'block' : 'none';
+                imageInput.style.display = type === 'image' ? 'block' : 'none';
+            });
+
+            bgColor?.addEventListener('input', autoSubmit);
+            bgImage?.addEventListener('change', autoSubmit);
+        }
+    </script>
+
+</body>
+
+</html>
