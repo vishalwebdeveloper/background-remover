@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%-i_qufd^(3%+5duf11ni0c0vb-y0)=t6$ljg5azov^yk&25f=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['background-remover-2kp1.onrender.com']  # Change this to your domain or IP in production
 
 
 # Application definition
