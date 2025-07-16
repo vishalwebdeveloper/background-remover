@@ -1,3 +1,2 @@
-preview the video of the project
-https://github.com/user-attachments/assets/32f8a46a-d616-47f1-9e28-5d16f2af6612
+https://github.com/user-attachments/assets/ac66470c-e7c9-4bc5-bd25-c9cc9f7c333c
 
